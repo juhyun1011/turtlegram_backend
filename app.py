@@ -151,6 +151,18 @@ def get_article():
 
     return jsonify({"message":"success", "articles":articles})
 
+#변수명 url 사용
+@app.route("/article/<article_id>", methods=["GET"])
+def get_article_detail(article_id):
+    print(article_id)
+    article = db.article.find_one({"_id":ObjectId(article_id)})   #article_id 값을 objectid화 해준 뒤 검색
+    print(article)
+    article["_id"] = str(article["_id"])
+
+
+    return jsonify({"message":"success", "article":article})
+
+
 
 
 if __name__ == '__main__':
