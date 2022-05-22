@@ -21,7 +21,7 @@ db = client.dbturtlegram
 
 def authorize(f):
     @wraps(f)
-    def decorated_function():
+    def decorated_function(*args, **kwargs):
         if not 'Authorization' in request.headers:
             abort(401)
         token = request.headers['Authorization']
@@ -29,7 +29,7 @@ def authorize(f):
             user = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
         except:
             abort(401)
-        return f(user)
+        return f(user, *args, **kwargs)
     return decorated_function
 
 
@@ -39,7 +39,7 @@ def authorize(f):
 @app.route("/")
 @authorize
 def hello_word(user):
-    print(user)
+    # print(user)
     return jsonify({'message': 'success'})
 
 #회원가입
@@ -82,19 +82,19 @@ def sign_up():
 def login():
     print(request)
     data = json.loads(request.data)
-    print(data)
+    # print(data)
 
     email = data.get("email")
     password = data.get("password")
     hashed_pw = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    print(hashed_pw)
+    # print(hashed_pw)
     
 
     result = db.users.find_one({
         'email' : email,
         'password' : hashed_pw
     })
-    print(result)
+    # print(result)
 
     if result is None:
         return jsonify({"message" : "아이디나 비밀번호가 옳지 않습니다."}), 401
@@ -125,7 +125,7 @@ def get_user_info(user):
 @authorize
 def post_article(user):
     data = json.loads(request.data)
-    print(data)
+    # print(data)
 
     db_user = db.users.find_one({'_id' : ObjectId(user.get('id'))})  #다시 objectid로 변환
 
@@ -137,7 +137,7 @@ def post_article(user):
         'user_email' : db_user['email'],
         'time': now
     }
-    print(doc)
+    # print(doc)
 
     db.article.insert_one(doc)
 
@@ -154,13 +154,33 @@ def get_article():
 #변수명 url 사용
 @app.route("/article/<article_id>", methods=["GET"])
 def get_article_detail(article_id):
-    print(article_id)
+    # print(article_id)
     article = db.article.find_one({"_id":ObjectId(article_id)})   #article_id 값을 objectid화 해준 뒤 검색
-    print(article)
+    # print(article)
     article["_id"] = str(article["_id"])
 
 
     return jsonify({"message":"success", "article":article})
+
+@app.route("/article/<article_id>", methods=["PATCH"])
+@authorize #작성자만 수정할 수 있도록 권한 부여
+def patch_article_detail(user, article_id):
+
+    data = json.loads(request.data)
+    title = data.get("title")
+    content = data.get("content")
+
+    article = db.article.update_one({"_id": ObjectId(article_id), "user": user["id"]}, {
+        "$set" : {"title": title, "content" : content}})
+    print(article.matched_count)  #성공시 1, 실패시 0 return
+
+    if article.matched_count:
+        return jsonify({"message":"succese"})
+    else:
+        return jsonify({"message":"fail"}), 403
+
+
+
 
 
 
