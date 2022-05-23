@@ -118,7 +118,7 @@ def get_user_info(user):
         '_id': ObjectId(user["id"])
     })
 
-    return jsonify({"message":"success", "email": result["email"]})
+    return jsonify({"message":"success", "email": result["email"], "id": user["id"]})
 
 
 @app.route("/article", methods=["POST"])
