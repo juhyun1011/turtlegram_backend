@@ -1,6 +1,5 @@
 from functools import wraps
 import json
-from queue import Empty
 from sre_constants import SUCCESS
 from bson import ObjectId
 from flask import Flask, jsonify, request, Response, abort
@@ -9,6 +8,7 @@ from pymongo import MongoClient
 import jwt, hashlib
 from datetime import datetime, timedelta
 from functools import wraps
+from bson.json_util import dumps
 
 SECRET_KEY = "turtle"
 
@@ -155,11 +155,14 @@ def get_article():
 #변수명 url 사용(게시글 상세 페이지)
 @app.route("/article/<article_id>", methods=["GET"])
 def get_article_detail(article_id):
-    # print(article_id)
     article = db.article.find_one({"_id":ObjectId(article_id)})   #article_id 값을 objectid화 해준 뒤 검색
-    # print(article)
+
+    #댓글 불러오기
+    comments = list(db.comment.find({"article":article_id}))
+
     if article:
         article["_id"] = str(article["_id"])
+        article["comments"] = json.loads(dumps(comments))  #덤프 이용해서 object id를 str로
         return jsonify({"message":"success", "article":article})
     else: 
         return jsonify({"message":"fail"}), 404
@@ -217,6 +220,8 @@ def post_comment(user, article_id):
     db.comment.insert_one(doc)
 
     return jsonify({"message":"success"})
+
+#댓글 read
 
 
 
