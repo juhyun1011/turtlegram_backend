@@ -110,7 +110,7 @@ def login():
 
     return jsonify({'message':"success", 'token': token})
     
-
+#사용자 정보 확인
 @app.route("/getuserinfo", methods=["GET"])
 @authorize
 def get_user_info(user):
@@ -120,7 +120,7 @@ def get_user_info(user):
 
     return jsonify({"message":"success", "email": result["email"], "id": user["id"]})
 
-
+#게시글 등록
 @app.route("/article", methods=["POST"])
 @authorize
 def post_article(user):
@@ -143,6 +143,7 @@ def post_article(user):
 
     return jsonify({"message":"success"})
 
+#게시글 보여주기
 @app.route("/article", methods=["GET"])
 def get_article():
     articles = list(db.article.find())
@@ -151,7 +152,7 @@ def get_article():
 
     return jsonify({"message":"success", "articles":articles})
 
-#변수명 url 사용
+#변수명 url 사용(게시글 상세 페이지)
 @app.route("/article/<article_id>", methods=["GET"])
 def get_article_detail(article_id):
     # print(article_id)
@@ -193,6 +194,36 @@ def delete_article_detail(user, article_id):
         return jsonify({"message":"success"})
     else:
         return jsonify({"message":"fail"}), 403
+
+
+#댓글 생성
+@app.route("/article/<article_id>/comment", methods=["POST"])
+@authorize
+def post_comment(user, article_id):
+    data = json.loads(request.data)
+    print(data)
+
+    db_user = db.users.find_one({'_id': ObjectId(user.get('id'))})
+    now = datetime.now().strftime("%H:%M:%S")
+    doc = {
+        'article' : article_id,
+        'content' : data.get('content', None),
+        'user' : user['id'],
+        'user_email' : db_user['email'],
+        'time': now
+    }
+    print(doc)
+
+    db.comment.insert_one(doc)
+
+    return jsonify({"message":"success"})
+
+
+
+
+
+
+
 
 
 
