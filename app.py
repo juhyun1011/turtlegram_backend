@@ -221,8 +221,12 @@ def post_comment(user, article_id):
 
     return jsonify({"message":"success"})
 
-#댓글 read
-
+#댓글 read 또 다른 방식(댓글만 따로)
+@app.route("/article/<article_id>/comment", methods=["GET"])
+def get_comment(article_id):
+    comments = list(db.comment.find({"article":article_id}))
+    json_comments = json.loads(dumps(comments))
+    return jsonify({"message":"success", "comments":json_comments})
 
 
 
