@@ -266,6 +266,17 @@ def delete_like(user,article_id):
     else:
         return jsonify({"message":"fail"}), 400
 
+#좋아요 여부 체크
+@app.route("/article/<article_id>/like", methods=["GET"])
+@authorize
+def get_like(user, article_id):
+    print(user,article_id)
+
+    result = db.like.find_one({"article":article_id, "user":user["id"]})
+    if result:
+        return jsonify({"message":"success","liked":True})
+    else:
+        return jsonify({"message":"fail", "liked":False})
 
 
 
