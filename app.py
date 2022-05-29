@@ -159,10 +159,14 @@ def get_article_detail(article_id):
 
     #댓글 불러오기
     comments = list(db.comment.find({"article":article_id}))
+    #좋아요 불러오기
+    likes = list(db.like.find({"article":article_id}))
+
 
     if article:
         article["_id"] = str(article["_id"])
         article["comments"] = json.loads(dumps(comments))  #덤프 이용해서 object id를 str로
+        article["likes_count"] = len(likes)
         return jsonify({"message":"success", "article":article})
     else: 
         return jsonify({"message":"fail"}), 404
