@@ -250,6 +250,18 @@ def post_liked(user, article_id):
     return jsonify({"message":"success"})
 
 
+#좋아요 취소
+@app.route("/article/<article_id>/like", methods=["DELETE"])
+@authorize
+def delete_like(user,article_id):
+    print(user, article_id)
+
+    result = db.like.delete_one({"article": article_id, "user": user["id"]})
+    if result.deleted_count:
+        return jsonify({"message":"success"})
+    else:
+        return jsonify({"message":"fail"}), 400
+
 
 
 
