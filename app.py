@@ -229,6 +229,30 @@ def get_comment(article_id):
     return jsonify({"message":"success", "comments":json_comments})
 
 
+#좋아요
+@app.route("/article/<article_id>/like", methods=["POST"])
+@authorize
+def post_liked(user, article_id):
+    print(user, article_id)
+    db_user = db.users.find_one({'_id':ObjectId(user.get('id'))})
+
+    now = datetime.now().strftime("%H:%M:%S")
+    doc = {
+        'article': article_id,
+        'user' : user['id'],
+        'user_email' : db_user['email'],
+        'time': now
+    }
+    print(doc)
+
+    db.like.insert_one(doc)
+
+    return jsonify({"message":"success"})
+
+
+
+
+
 
 
 
